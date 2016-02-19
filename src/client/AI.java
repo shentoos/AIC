@@ -67,9 +67,6 @@ public class AI {
     	
     	world.moveArmy(node, bestNeg, nodesInfo.get(node.getIndex()).neededArmy.get(bestNeg));
     }
-    public int armyAmountToSend( Node v, Node u ) {
-    //	return Math.max(1, (int) ( (double)(v.getArmyCount()) * (2.0/3) ));
-    }
     public int calcScore(Node node, World world){
     	int owner = node.getOwner();
     	if(owner == -1)
