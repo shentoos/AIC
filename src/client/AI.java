@@ -17,6 +17,7 @@ import client.model.Node;
  */
 public class AI {
 	int N=1000;
+	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
 	private void MyMain(Node nd, World world){
 		Node[] neighbours = nd.getNeighbours();
 		ArrayList<Node> good = new ArrayList<>();
@@ -39,7 +40,6 @@ public class AI {
           for (Node source : myNodes) {
               // get neighbours
               Node[] neighbours = source.getNeighbours();
-       
               if (neighbours.length > 0) {
                   // select a random neighbour
                   //Node destination = neighbours[(int) (neighbours.length * Math.random())];
