@@ -40,10 +40,11 @@ public class AI {
     public void  finalScoring ( Node node ){
     	nodesInfo.get(node.getIndex()).finalScore = new Double(nodesInfo.get(node.getIndex()).ownScore);
     	for ( Node neg : node.getNeighbours() )
-    		nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
+    		if ( nodesInfo.get(node.getIndex()).adjScores.get(neg) > 0 )
+    			nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
     }
     public void sendingArmy ( Node node ) {
-    	
+    	   
     }
 
 }
