@@ -16,23 +16,8 @@ import client.model.Node;
  * See World interface for more details.
  */
 public class AI {
-	int N=1000;
 	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
-	private void MyMain(Node nd, World world){
-		Node[] neighbours = nd.getNeighbours();
-		ArrayList<Node> good = new ArrayList<>();
-		int not_my_nodes = 0;
-        for(int i=0; i<neighbours.length; i++){
-        	if(neighbours[i].getOwner()!=world.getMyID()){
-        		not_my_nodes++;
-        		good.add(neighbours[i]);
-        	}
-        	
-        }
-        for(int j=0; j<Math.min(nd.getArmyCount()/2,good.size()); j++){
-        	world.moveArmy(nd, good.get(j), Math.max(2,nd.getArmyCount()/good.size()));
-        }
-	}
+	private double DISFACTOR = 2;
     public void doTurn(World world) {
         // fill this method, we've presented a stupid AI for example!
     	
@@ -51,13 +36,22 @@ public class AI {
           }
 
     }
+    
+    public void  finalScoring ( Node node ){
+    	nodesInfo.get(node.getIndex()).finalScore = new Double(nodesInfo.get(node.getIndex()).ownScore);
+    	for ( Node neg : node.getNeighbours() )
+    		nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
+    }
+    public void sendingArmy ( Node node ) {
+    	
+    }
 
 }
 
 class NodeInfo{
-	HashMap<Node, Integer> adjScores = new HashMap<>();
-	Integer ownScore;
-	Integer finalScore;
+	HashMap<Node, Double> adjScores = new HashMap<>();
+	Double ownScore;
+	Double finalScore;
 }
 
 class Info{
