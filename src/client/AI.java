@@ -61,8 +61,10 @@ public class AI {
     }
     public int getMoveAmount ( Node v, Node u ) {
     	int send = 0, amountNow = v.getArmyCount();
+    	if ( amountNow == 0 )
+    		return 0;
     	if ( Math.random() < RFACTORtoAmount ){
-    		send = Math.max((int) ( amountNow * Math.random()) , Math.min(amountNow, 1)); 
+    		send = Math.max((int) ( amountNow * Math.random()) , 1); 
     	} else {
     		send = Math.min( nodesInfo.get(v.getIndex()).neededArmy.get(u), Math.max(0, amountNow-2) );
     		amountNow -= send;
