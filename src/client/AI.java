@@ -1,6 +1,7 @@
 package client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import client.model.Node;
@@ -18,26 +19,51 @@ import client.model.Node;
 public class AI {
 	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
 	private double DISFACTOR = 2;
+	
     public void doTurn(World world) {
-        // fill this method, we've presented a stupid AI for example!
-    	
-    	  Node[] myNodes = world.getMyNodes();
-          for (Node source : myNodes) {
-              // get neighbours
-              Node[] neighbours = source.getNeighbours();
-              if (neighbours.length > 0) {
-                  // select a random neighbour
-                  //Node destination = neighbours[(int) (neighbours.length * Math.random())];
-                  //world.moveArmy(source, destination, source.getArmyCount()/2);
-                  // move half of the node's army to the neighbor node
-                  //MyMain(source,world);
-                  
-              }
-          }
-
+	  init(world);    	   	
+	  Node[] myNodes = world.getMyNodes();
+	  for (Node source : myNodes) {
+	      // get neighbours
+		  sendingArmy(source);
+	  }
+	  for (Node source : myNodes) {
+	      // get neighbours
+		  finalScoring(source);
+	  }
     }
-    
-    public void  finalScoring ( Node node ){
+    public void CompScores(World world){
+    	Node[] totNodes = getNodes(world);
+		for(int i=0; i<totNodes.length; i++){
+    		calcScore(totNodes[i], world);
+    	}
+	}
+    public static <T> T[] concat(T[] first, T[] second) {
+    	  T[] result = Arrays.copyOf(first, first.length + second.length);
+    	  System.arraycopy(second, 0, result, first.length, second.length);
+    	  return result;
+    }
+    public Node[] getNodes(World world){
+    	Node worldOccupiedNodes[] = concat(world.getMyNodes(),world.getOpponentNodes());
+    	Node worldNodes[] = concat(worldOccupiedNodes, world.getFreeNodes());
+    	return worldNodes;
+    }
+    public void init(World world) {
+		Node worldNodes[] = getNodes(world);
+		for(int i=0; i<worldNodes.length; i++){
+			NodeInfo nInfo = new NodeInfo();
+			Node neis[] = worldNodes[i].getNeighbours();
+			for(int j=0; i<neis.length; j++){
+				nInfo.adjScores.put(neis[j], 0.0);
+				nInfo.neededArmy.put(neis[j], 0);
+			}
+			nInfo.finalScore = 0.0;
+			nInfo.ownScore = 0.0;
+			nodesInfo.add(nInfo);
+		}
+	}
+
+	public void  finalScoring ( Node node ){
     	nodesInfo.get(node.getIndex()).finalScore = new Double(nodesInfo.get(node.getIndex()).ownScore);
     	for ( Node neg : node.getNeighbours() )
     		nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
@@ -45,35 +71,58 @@ public class AI {
     public void sendingArmy ( Node node ) {
     	
     }
-    public int calcScore(Node node, World world){
+    
+    public void calcScore(Node node, World world){
     	int owner = node.getOwner();
-    	if(owner == -1)
-    		return caclFreeCellScore(node, world);
+    	int scr = 0;
+		Node neis[] = node.getNeighbours();
+		int deg = neis.length;
+		int opptotNeis = 0;
+		int oppWeakNeis = 0;
+		int oppMediumNeis = 0;
+		int oppStrongNeis = 0;
+		int oppArmies = 0;
+		int ourNeis = 0;
+		int freeNeis = 0;
+		int neededArmy = 0;
+		for(int i=0; i<neis.length; i++){
+			if(neis[i].getOwner()==world.getMyID()){
+				ourNeis++;
+			}
+			else if(neis[i].getOwner()==(1-world.getMyID())){
+				opptotNeis++;
+				if(neis[i].getArmyCount()<10)
+					oppWeakNeis++;
+				else if(neis[i].getArmyCount()<30)
+					oppMediumNeis++;
+				else
+					oppStrongNeis++;
+				oppArmies += neis[i].getArmyCount();
+			}
+			else
+				freeNeis++;
+		}
+    	if(owner == -1){
+    		scr = deg*10-oppWeakNeis-2*oppMediumNeis-3*oppStrongNeis+ourNeis;
+    		neededArmy = (deg+2)/(ourNeis);
+    	}
     	else if(owner == world.getMyID()){
-    		return caclOurCellScore(node, world);
+    		scr = deg*10+2*oppWeakNeis+4*oppMediumNeis+6*oppStrongNeis-ourNeis;
+    		neededArmy = (int)(1.5*(oppArmies - node.getArmyCount())/ourNeis);
     	}
     	else{
-    		return calcOppCellScore(node, world);
+    		scr = deg*5+oppWeakNeis*2-oppMediumNeis-2*oppStrongNeis+5*ourNeis;;
+    		neededArmy = neededArmy = (int)(3*(oppArmies - node.getArmyCount())/ourNeis);
     	}
+    	nodesInfo.get(node.getIndex()).ownNeededArmy = neededArmy;
+    	nodesInfo.get(node.getIndex()).ownScore = (double) scr;
     }
-	private int calcOppCellScore(Node node, World world) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	private int caclOurCellScore(Node node, World world) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	private int caclFreeCellScore(Node node, World world) {
-		int deg = node.getNeighbours().length;
-		
-		return 0;
-	}
-
 }
 
 class NodeInfo{
 	HashMap<Node, Double> adjScores = new HashMap<>();
+	HashMap<Node, Integer> neededArmy = new HashMap<>();
+	Integer ownNeededArmy;
 	Double ownScore;
 	Double finalScore;
 }
