@@ -18,7 +18,11 @@ import client.model.Node;
 public class AI {
 	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
 	private double DISFACTOR = 2;
+	private double RFACTORtoAmount = 0.1;
+	private double RFACTORtoChoose = 0.1;
 	private double INF = 1000 * 1000 * 1000.0;
+	private int EPS = 5;
+	private double EPSPROB = 0.5;
     public void doTurn(World world) {
         // fill this method, we've presented a stupid AI for example!
     	
@@ -55,9 +59,29 @@ public class AI {
     		}
     	return bestNeg;
     }
+    public int getMoveAmount ( Node v, Node u ) {
+    	int send = 0, amountNow = v.getArmyCount();
+    	if ( Math.random() < RFACTORtoAmount ){
+    		send = Math.max((int) ( amountNow * Math.random()) , Math.min(amountNow, 1)); 
+    	} else {
+    		send = Math.min( nodesInfo.get(v.getIndex()).neededArmy.get(u), Math.max(0, amountNow-2) );
+    		amountNow -= send;
+    		if ( amountNow - 10 >= EPS && Math.random() <= EPSPROB ){
+    			send += amountNow - 10;
+    			amountNow = 10;
+    		}
+    		if ( amountNow - 30 >= EPS && Math.random() <= EPSPROB ){
+    			send += amountNow - 30;
+    			amountNow = 30;
+    		}
+    	}
+    	
+    	return send;
+    	
+    }
     public void sendingArmy ( World world, Node node ) {
     	Node bestNeg = getBestChoiceNeighbour( node );
-    	if ( Math.random() < 0.1 && node.getNeighbours().length > 0 )
+    	if ( Math.random() < RFACTORtoChoose && node.getNeighbours().length > 0 )
     		bestNeg = node.getNeighbours()[(int) ( Math.random() * node.getNeighbours().length )] ;
     	
     	if ( nodesInfo.get(node.getIndex()).finalScore > nodesInfo.get(bestNeg.getIndex()).finalScore )
@@ -65,7 +89,7 @@ public class AI {
     	if ( bestNeg == node )
     		return;
     	
-    	world.moveArmy(node, bestNeg, nodesInfo.get(node.getIndex()).neededArmy.get(bestNeg));
+    	world.moveArmy(node, bestNeg, getMoveAmount(node, bestNeg));
     }
     public int calcScore(Node node, World world){
     	int owner = node.getOwner();
