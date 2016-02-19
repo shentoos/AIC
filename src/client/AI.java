@@ -45,6 +45,30 @@ public class AI {
     public void sendingArmy ( Node node ) {
     	
     }
+    public int calcScore(Node node, World world){
+    	int owner = node.getOwner();
+    	if(owner == -1)
+    		return caclFreeCellScore(node, world);
+    	else if(owner == world.getMyID()){
+    		return caclOurCellScore(node, world);
+    	}
+    	else{
+    		return calcOppCellScore(node, world);
+    	}
+    }
+	private int calcOppCellScore(Node node, World world) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	private int caclOurCellScore(Node node, World world) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	private int caclFreeCellScore(Node node, World world) {
+		int deg = node.getNeighbours().length;
+		
+		return 0;
+	}
 
 }
 
