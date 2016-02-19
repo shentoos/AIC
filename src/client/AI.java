@@ -19,13 +19,18 @@ import client.model.Node;
 public class AI {
 	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
 	private double DISFACTOR = 2;
+	private double RFACTORtoAmount = 0.1;
+	private double RFACTORtoChoose = 0.1;
+	private double INF = 1000 * 1000 * 1000.0;
+	private int EPS = 5;
+	private double EPSPROB = 0.5;
 	
     public void doTurn(World world) {
 	  init(world);    	   	
 	  Node[] myNodes = world.getMyNodes();
 	  for (Node source : myNodes) {
 	      // get neighbours
-		  sendingArmy(source);
+		  sendingArmy(world, source);
 	  }
 	  for (Node source : myNodes) {
 	      // get neighbours
@@ -66,10 +71,51 @@ public class AI {
 	public void  finalScoring ( Node node ){
     	nodesInfo.get(node.getIndex()).finalScore = new Double(nodesInfo.get(node.getIndex()).ownScore);
     	for ( Node neg : node.getNeighbours() )
-    		nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
+    		if ( nodesInfo.get(node.getIndex()).adjScores.get(neg) > 0 )
+    			nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
     }
-    public void sendingArmy ( Node node ) {
+    
+    public Node getBestChoiceNeighbour( Node node ) {
+    	Node bestNeg = node;
+    	Double price = new Double(-INF);
+    	for ( Node neg : node.getNeighbours() )
+    		if ( price < nodesInfo.get(neg.getIndex()).finalScore ) {
+    			bestNeg = neg;
+    			price = nodesInfo.get(neg.getIndex()).finalScore;
+    		}
+    	return bestNeg;
+    }
+    public int getMoveAmount ( Node v, Node u ) {
+    	int send = 0, amountNow = v.getArmyCount();
+    	if ( Math.random() < RFACTORtoAmount ){
+    		send = Math.max((int) ( amountNow * Math.random()) , Math.min(amountNow, 1)); 
+    	} else {
+    		send = Math.min( nodesInfo.get(v.getIndex()).neededArmy.get(u), Math.max(0, amountNow-2) );
+    		amountNow -= send;
+    		if ( amountNow - 10 >= EPS && Math.random() <= EPSPROB ){
+    			send += amountNow - 10;
+    			amountNow = 10;
+    		}
+    		if ( amountNow - 30 >= EPS && Math.random() <= EPSPROB ){
+    			send += amountNow - 30;
+    			amountNow = 30;
+    		}
+    	}
     	
+    	return send;
+    	
+    }
+    public void sendingArmy ( World world, Node node ) {
+    	Node bestNeg = getBestChoiceNeighbour( node );
+    	if ( Math.random() < RFACTORtoChoose && node.getNeighbours().length > 0 )
+    		bestNeg = node.getNeighbours()[(int) ( Math.random() * node.getNeighbours().length )] ;
+    	
+    	if ( nodesInfo.get(node.getIndex()).finalScore > nodesInfo.get(bestNeg.getIndex()).finalScore )
+    		return;
+    	if ( bestNeg == node )
+    		return;
+    	
+    	world.moveArmy(node, bestNeg, getMoveAmount(node, bestNeg));
     }
     
     public void calcScore(Node node, World world){
