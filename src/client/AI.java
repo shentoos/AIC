@@ -55,7 +55,9 @@ public class AI {
 }
 
 class NodeInfo{
-	HashMap<Node, Integer> score = new HashMap<>();
+	HashMap<Node, Integer> adjScores = new HashMap<>();
+	Integer ownScore;
+	Integer finalScore;
 }
 
 class Info{
