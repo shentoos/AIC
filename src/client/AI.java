@@ -18,6 +18,7 @@ import client.model.Node;
 public class AI {
 	ArrayList<NodeInfo> nodesInfo = new ArrayList<>();
 	private double DISFACTOR = 2;
+	private double INF = 1000 * 1000 * 1000.0;
     public void doTurn(World world) {
         // fill this method, we've presented a stupid AI for example!
     	
@@ -43,9 +44,47 @@ public class AI {
     		if ( nodesInfo.get(node.getIndex()).adjScores.get(neg) > 0 )
     			nodesInfo.get(node.getIndex()).finalScore += nodesInfo.get(node.getIndex()).adjScores.get(neg) / DISFACTOR;
     }
-    public void sendingArmy ( Node node ) {
-    	   
+    
+    public Node getBestChoiceNeighbour( Node node ) {
+    	Node bestNeg = node;
+    	Double price = new Double(-INF);
+    	for ( Node neg : node.getNeighbours() )
+    		if ( price < nodesInfo.get(neg.getIndex()).finalScore ) {
+    			bestNeg = neg;
+    			price = nodesInfo.get(neg.getIndex()).finalScore;
+    		}
+    	return bestNeg;
     }
+    public void sendingArmy ( Node node ) {
+    	Node bestNeg = getBestChoiceNeighbour( node );
+    	if ( nodesInfo.get(node.getIndex()).finalScore > nodesInfo.get(bestNeg.getIndex()).finalScore )
+    		return;
+    	
+    }
+    public int calcScore(Node node, World world){
+    	int owner = node.getOwner();
+    	if(owner == -1)
+    		return caclFreeCellScore(node, world);
+    	else if(owner == world.getMyID()){
+    		return caclOurCellScore(node, world);
+    	}
+    	else{
+    		return calcOppCellScore(node, world);
+    	}
+    }
+	private int calcOppCellScore(Node node, World world) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	private int caclOurCellScore(Node node, World world) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	private int caclFreeCellScore(Node node, World world) {
+		int deg = node.getNeighbours().length;
+		
+		return 0;
+	}
 
 }
 
