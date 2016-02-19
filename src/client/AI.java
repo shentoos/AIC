@@ -55,11 +55,20 @@ public class AI {
     		}
     	return bestNeg;
     }
-    public void sendingArmy ( Node node ) {
+    public void sendingArmy ( World world, Node node ) {
     	Node bestNeg = getBestChoiceNeighbour( node );
+    	if ( Math.random() < 0.1 && node.getNeighbours().length > 0 )
+    		bestNeg = node.getNeighbours()[(int) ( Math.random() * node.getNeighbours().length )] ;
+    	
     	if ( nodesInfo.get(node.getIndex()).finalScore > nodesInfo.get(bestNeg.getIndex()).finalScore )
     		return;
+    	if ( bestNeg == node )
+    		return;
     	
+    	world.moveArmy(node, bestNeg, nodesInfo.get(node.getIndex()).neededArmy.get(bestNeg));
+    }
+    public int armyAmountToSend( Node v, Node u ) {
+    //	return Math.max(1, (int) ( (double)(v.getArmyCount()) * (2.0/3) ));
     }
     public int calcScore(Node node, World world){
     	int owner = node.getOwner();
